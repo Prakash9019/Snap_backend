@@ -24,5 +24,6 @@ app.use('/api/videos', require('./routes/videoRoutes'));
 app.use('/api/wallet', require('./routes/walletRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/campaigns', require('./routes/campaignsRoutes'));
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

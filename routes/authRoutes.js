@@ -1,20 +1,102 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const EmailOtp = require("../models/EmailOtp");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const twilio = require('twilio');
-
+const nodemailer = require('nodemailer');
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const TWILIO_VERIFY_SERVICE_SID = process.env.TWILIO_VERIFY_SERVICE_SID;
 const JWT_SECRET = process.env.JWT_SECRET;
+const EMAIL_USER = process.env.EMAIL_USER;   // Gmail or custom SMTP user
+const EMAIL_PASS = process.env.EMAIL_PASS;   // Gmail App Password or SMTP password
 
 const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
 const generateToken = (id) => {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: '1h' });
 };
+
+
+// --- Nodemailer Transporter ---
+const transporter = nodemailer.createTransport({
+  service: "gmail", // Or your SMTP provider
+  auth: {
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
+  },
+});
+
+// =============================
+// EMAIL OTP FLOW (Production Ready)
+// =============================
+
+// Send Email OTP
+router.post("/send-email-otp", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ msg: "Email is required" });
+
+  try {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Delete any previous OTP for same email
+    await EmailOtp.deleteMany({ email });
+
+    // Save new OTP in DB
+    const emailOtp = new EmailOtp({ email, otp });
+    await emailOtp.save();
+
+    // Send Email
+    const mailOptions = {
+      from: `"MyApp Support" <${EMAIL_USER}>`,
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP code is ${otp}. It will expire in 5 minutes.`,
+      html: `<p>Your OTP code is <b>${otp}</b>. It will expire in 5 minutes.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ msg: "OTP sent to email" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Failed to send OTP email" });
+  }
+});
+
+// Verify Email OTP
+router.post("/verify-email-otp", async (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) {
+    return res.status(400).json({ msg: "Email and OTP are required" });
+  }
+
+  try {
+    const record = await EmailOtp.findOne({ email, otp: code });
+
+    if (!record) {
+      return res.status(400).json({ msg: "Invalid or expired OTP" });
+    }
+
+    // OTP is valid → create/find user
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({ email });
+      await user.save();
+    }
+
+    // Remove OTP after successful verification
+    await EmailOtp.deleteMany({ email });
+
+    const token = generateToken(user._id);
+    return res.json({ msg: "OTP verified successfully", token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Failed to verify OTP" });
+  }
+});
 
 router.post('/send-otp', async (req, res) => {
   const { mobileNumber } = req.body;
