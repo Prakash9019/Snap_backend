@@ -5,6 +5,7 @@ const EmailOtp = require("../models/EmailOtp");
 const Admin = require('../models/Admin');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+import { OAuth2Client } from "google-auth-library";
 const jwt = require('jsonwebtoken');
 const twilio = require('twilio');
 const nodemailer = require('nodemailer');
@@ -16,7 +17,7 @@ const EMAIL_USER = process.env.EMAIL_USER;   // Gmail or custom SMTP user
 const EMAIL_PASS = process.env.EMAIL_PASS;   // Gmail App Password or SMTP password
 
 const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const generateToken = (id) => {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: '1h' });
 };
@@ -186,11 +187,13 @@ router.post('/login-email', async (req, res) => {
 router.post('/login-google', async (req, res) => {
   const { token } = req.body;
   try {
+    // Verify Google token
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: GOOGLE_CLIENT_ID,
+      audience: process.env.GOOGLE_CLIENT_ID, // must match
     });
     const { sub, email, name } = ticket.getPayload();
+
     let user = await User.findOne({ googleId: sub });
     if (!user) {
       user = await User.findOne({ email });
@@ -202,14 +205,14 @@ router.post('/login-google', async (req, res) => {
         await user.save();
       }
     }
+
     const authToken = generateToken(user._id);
-    res.json({ token: authToken });
+    res.json({ token: authToken, user });
   } catch (err) {
-    res.status(500).json({ msg: 'Server Error' });
+    console.error(err);
+    res.status(500).json({ msg: 'Google login failed' });
   }
 });
-
-
 
 
 router.post('/admin-signup', async (req, res) => {
