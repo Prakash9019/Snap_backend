@@ -5,7 +5,7 @@ const EmailOtp = require("../models/EmailOtp");
 const Admin = require('../models/Admin');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-import { OAuth2Client } from "google-auth-library";
+const { OAuth2Client } = require("google-auth-library");
 const jwt = require('jsonwebtoken');
 const twilio = require('twilio');
 const nodemailer = require('nodemailer');
