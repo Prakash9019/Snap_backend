@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const EmailOtp = require("../models/EmailOtp");
+const Admin = require('../models/Admin');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const twilio = require('twilio');
@@ -202,6 +204,87 @@ router.post('/login-google', async (req, res) => {
     }
     const authToken = generateToken(user._id);
     res.json({ token: authToken });
+  } catch (err) {
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
+
+
+
+router.post('/admin-signup', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    let adminUser = await Admin.findOne({ email });
+    if (adminUser) {
+      return res.status(400).json({ msg: 'Admin already exists' });
+    }
+    adminUser = new Admin({ email, password });
+    await adminUser.save();
+    res.status(201).json({ msg: 'Admin account created successfully' });
+  } catch (err) {
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
+// Admin Login
+router.post('/admin-login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const adminUser = await Admin.findOne({ email });
+    if (!adminUser || !(await adminUser.matchPassword(password))) {
+      return res.status(401).json({ msg: 'Invalid credentials' });
+    }
+    const token = generateToken(adminUser._id);
+    res.json({ token, role: 'admin' });
+  } catch (err) {
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
+// Admin Password Reset Request
+router.post('/admin-forgot-password', async (req, res) => {
+  const { email } = req.body;
+  try {
+    const adminUser = await Admin.findOne({ email });
+    if (!adminUser) {
+      return res.status(404).json({ msg: 'Admin not found' });
+    }
+    const otp = crypto.randomBytes(3).toString('hex').toUpperCase();
+    adminUser.otp = otp;
+    adminUser.otpExpires = Date.now() + 3600000; // 1 hour
+    await adminUser.save();
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset OTP',
+      text: `Your OTP for password reset is: ${otp}`
+    };
+    await transporter.sendMail(mailOptions);
+    res.json({ msg: 'OTP sent to your email.' });
+  } catch (err) {
+    res.status(500).json({ msg: 'Failed to send OTP.' });
+  }
+});
+
+// Admin Password Reset Verification
+router.post('/admin-reset-password', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  try {
+    const adminUser = await Admin.findOne({ 
+      email, 
+      otp, 
+      otpExpires: { $gt: Date.now() } 
+    });
+    if (!adminUser) {
+      return res.status(400).json({ msg: 'Invalid or expired OTP.' });
+    }
+    adminUser.password = newPassword;
+    adminUser.otp = undefined;
+    adminUser.otpExpires = undefined;
+    await adminUser.save();
+    res.json({ msg: 'Password reset successfully!' });
   } catch (err) {
     res.status(500).json({ msg: 'Server Error' });
   }
