@@ -12,7 +12,7 @@ router.get('/', protect, async (req, res) => {
     //   startDate: { $lte: now },
     //   endDate: { $gte: now },
     // }).select('id title description reward imageUrl');
-      const campaigns = await Campaign.find().select('id title tag imageUrl');
+      const campaigns = await Campaign.find();
        res.json(campaigns);
     // console
     res.json(campaigns);
