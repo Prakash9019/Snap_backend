@@ -7,12 +7,14 @@ const { submitCampaign } = require('../controllers/userCampaignController');
 
 router.get('/', protect, async (req, res) => {
   try {
-    const now = new Date();
-    const campaigns = await Campaign.find({
-      startDate: { $lte: now },
-      endDate: { $gte: now },
-    }).select('id title description reward imageUrl');
-    
+    // const now = new Date();
+    // const campaigns = await Campaign.find({
+    //   startDate: { $lte: now },
+    //   endDate: { $gte: now },
+    // }).select('id title description reward imageUrl');
+      const campaigns = await Campaign.find().select('id title tag imageUrl');
+       res.json(campaigns);
+    // console
     res.json(campaigns);
   } catch (err) {
     console.error(err.message);
