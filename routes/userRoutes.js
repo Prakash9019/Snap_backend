@@ -17,12 +17,10 @@ router.get("/profile", protect, async (req, res) => {
     );
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
-      return res.status(404).json({ msg: "User not found" });
     }
     res.json({ name: user.name, isProfileComplete: user.isProfileComplete });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
     res.status(500).send("Server Error");
   }
 });
