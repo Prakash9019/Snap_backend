@@ -11,8 +11,6 @@ const VideoSubmission = require("../models/VideoSubmission");
 
 // Get profile
 router.get("/profile", protect, async (req, res) => {
-// Get profile
-router.get("/profile", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
       "name isProfileComplete"
@@ -59,8 +57,6 @@ router.post("/profile-setup", protect, async (req, res) => {
 
 // Video submissions
 router.get("/submissions", protect, async (req, res) => {
-// Video submissions
-router.get("/submissions", protect, async (req, res) => {
   try {
     const submissions = await VideoSubmission.find({ userId: req.user.id })
       .populate("campaignId", "title imageUrl")
@@ -68,10 +64,8 @@ router.get("/submissions", protect, async (req, res) => {
       .sort({ createdAt: -1 });
 
     const formattedSubmissions = submissions.map((sub) => ({
-    const formattedSubmissions = submissions.map((sub) => ({
       id: sub.id,
       campaignTitle: sub.campaignId.title,
-      status: sub.status === "pending" ? "In Progress" : "Completed",
       status: sub.status === "pending" ? "In Progress" : "Completed",
       imageUrl: sub.campaignId.imageUrl,
     }));
@@ -80,7 +74,6 @@ router.get("/submissions", protect, async (req, res) => {
     res.json(formattedSubmissions);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
     res.status(500).send("Server Error");
   }
 });
@@ -97,6 +90,7 @@ router.get("/upi-id", protect, async (req, res) => {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
+})
 // Get UPI
 router.get("/upi-id", protect, async (req, res) => {
   try {
@@ -126,6 +120,7 @@ router.post("/save-upi", protect, async (req, res) => {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
+})
 // Save UPI
 router.post("/save-upi", protect, async (req, res) => {
   const { upiId } = req.body;
@@ -155,6 +150,7 @@ router.get("/account-details", protect, async (req, res) => {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
+});
 // Get account details
 router.get("/account-details", protect, async (req, res) => {
   try {
