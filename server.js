@@ -26,7 +26,7 @@ app.use('/api/wallet', require('./routes/walletRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/campaigns', require('./routes/campaignsRoutes'));
 
-app.get("/get-upload-url", async (req, res) => {
+app.get("/api/get-upload-url", async (req, res) => {
   try {
     const fileName = `profile_${Date.now()}.jpg`;
     const options = {
