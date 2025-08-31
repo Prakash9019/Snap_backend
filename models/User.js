@@ -12,7 +12,6 @@ const userSchema = new mongoose.Schema({
   cityState: { type: String },
   motherTongue: { type: String },
   qualification: { type: String },
-  profileImage: { type: String },
   isProfileComplete: { type: Boolean, default: false },
   upiId: { type: String },
   accountDetails: {

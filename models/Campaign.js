@@ -11,6 +11,8 @@ const questionSchema = new mongoose.Schema({
 const stageSchema = new mongoose.Schema({
   title: { type: String, required: true },
   questions: [questionSchema],
+  video: { type: String },
+  stage6Image : { type: String },
 });
 
 const campaignSchema = new mongoose.Schema({

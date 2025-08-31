@@ -3,7 +3,6 @@ const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const VideoSubmission = require("../models/VideoSubmission");
-const { userUpload, gcsUpload } = require("../middleware/gcp");
 
 // Get profile
 router.get("/profile", protect, async (req, res) => {
@@ -13,24 +12,6 @@ router.get("/profile", protect, async (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
     res.json({ name: user.name, isProfileComplete: user.isProfileComplete });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-});
-
-router.post("/profile-image", protect, userUpload, gcsUpload, async (req, res) => {
-  try {
-    if (!req.files || !req.files.image) {
-      return res.status(400).json({ msg: "No image uploaded" });
-    }
-
-    const profileUrl = req.files.image[0].gcsUrl;
-    const user = await User.findById(req.user.id);
-    user.profileImage = profileUrl;
-    await user.save();
-
-    res.json({ msg: "Profile image updated successfully", profileImage: profileUrl });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");

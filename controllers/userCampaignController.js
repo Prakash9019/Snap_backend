@@ -10,8 +10,8 @@ exports.submitCampaign = async (req, res) => {
             userId,
             campaignId,
             answers: JSON.parse(answers),
-            videoUrl: req.files.video ? req.files.video[0].path : null,
-            // imageUrl: req.files.image ? req.files.image[0].path : null, // If you have an image upload
+            videoUrl: req.files.video ? req.files.video[0].gcsUrl : null,
+            stageImage: req.files.stage6Image ? req.files.stage6Image[0].gcsUrl : null,
         });
 
         await submission.save();
