@@ -187,6 +187,9 @@ router.post(
   gcsUpload,
   async (req, res) => {
     try {
+      console.log("Files received:", req.files);
+console.log("Body:", req.body);
+
       const user = await User.findById(req.user.id);
       if (!user) {
         return res.status(404).json({ msg: "User not found" });
