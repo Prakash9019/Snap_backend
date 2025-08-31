@@ -83,50 +83,103 @@ exports.verifyEmailOtp = async (req, res) => {
   }
 };
 
+// exports.sendOtp = async (req, res) => {
+//   const { mobileNumber } = req.body;
+//   if (!mobileNumber) {
+//     return res.status(400).json({ msg: 'Mobile number is required' });
+//   }
+
+//   try {
+//     const verification = await twilioClient.verify.v2.services(TWILIO_VERIFY_SERVICE_SID)
+//       .verifications
+//       .create({ to: `+91${mobileNumber}`, channel: 'sms' });
+//     res.json({ msg: 'OTP sent successfully.', status: verification.status });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ msg: 'Failed to send OTP.' });
+//   }
+// };
+
+// exports.verifyOtp = async (req, res) => {
+//   const { mobileNumber, code } = req.body;
+//   if (!mobileNumber || !code) {
+//     return res.status(400).json({ msg: 'Mobile number and OTP are required' });
+//   }
+
+//   try {
+//     const verificationCheck = await twilioClient.verify.v2.services(TWILIO_VERIFY_SERVICE_SID)
+//       .verificationChecks
+//       .create({ to: `+91${mobileNumber}`, code });
+
+//     if (verificationCheck.status === 'approved') {
+//       let user = await User.findOne({ mobileNumber });
+//       if (!user) {
+//         user = new User({ mobileNumber });
+//         await user.save();
+//       }
+//       const token = generateToken(user._id);
+//       res.json({ msg: 'OTP verified successfully.', token });
+//     } else {
+//       res.status(400).json({ msg: 'Invalid OTP' });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ msg: 'Failed to verify OTP.' });
+//   }
+// };
+
+const axios = require("axios");
+
 exports.sendOtp = async (req, res) => {
   const { mobileNumber } = req.body;
   if (!mobileNumber) {
-    return res.status(400).json({ msg: 'Mobile number is required' });
+    return res.status(400).json({ msg: "Mobile number is required" });
   }
 
   try {
-    const verification = await twilioClient.verify.v2.services(TWILIO_VERIFY_SERVICE_SID)
-      .verifications
-      .create({ to: `+91${mobileNumber}`, channel: 'sms' });
-    res.json({ msg: 'OTP sent successfully.', status: verification.status });
+    const response = await axios.get(
+      `https://control.msg91.com/api/v5/otp?template_id=${process.env.MSG91_TEMPLATE_ID}&mobile=91${mobileNumber}&authkey=${process.env.MSG91_AUTH_KEY}`
+    );
+
+    if (response.data.type === "success") {
+      res.json({ msg: "OTP sent successfully." });
+    } else {
+      res.status(400).json({ msg: "Failed to send OTP", data: response.data });
+    }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: 'Failed to send OTP.' });
+    console.error(error.response?.data || error.message);
+    res.status(500).json({ msg: "Failed to send OTP." });
   }
 };
 
 exports.verifyOtp = async (req, res) => {
   const { mobileNumber, code } = req.body;
   if (!mobileNumber || !code) {
-    return res.status(400).json({ msg: 'Mobile number and OTP are required' });
+    return res.status(400).json({ msg: "Mobile number and OTP are required" });
   }
 
   try {
-    const verificationCheck = await twilioClient.verify.v2.services(TWILIO_VERIFY_SERVICE_SID)
-      .verificationChecks
-      .create({ to: `+91${mobileNumber}`, code });
+    const response = await axios.get(
+      `https://control.msg91.com/api/v5/otp/verify?mobile=91${mobileNumber}&otp=${code}&authkey=${process.env.MSG91_AUTH_KEY}`
+    );
 
-    if (verificationCheck.status === 'approved') {
+    if (response.data.type === "success") {
       let user = await User.findOne({ mobileNumber });
       if (!user) {
         user = new User({ mobileNumber });
         await user.save();
       }
       const token = generateToken(user._id);
-      res.json({ msg: 'OTP verified successfully.', token });
+      res.json({ msg: "OTP verified successfully.", token });
     } else {
-      res.status(400).json({ msg: 'Invalid OTP' });
+      res.status(400).json({ msg: "Invalid OTP", data: response.data });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: 'Failed to verify OTP.' });
+    console.error(error.response?.data || error.message);
+    res.status(500).json({ msg: "Failed to verify OTP." });
   }
 };
+
 
 exports.registerEmail = async (req, res) => {
   const { name, email, password } = req.body;

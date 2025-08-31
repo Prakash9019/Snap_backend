@@ -1,13 +1,20 @@
 const express = require("express");
+const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
+const {
+  userUpload,
+  gcsUpload,
+} = require("../middleware/uploadMiddleware");
 const User = require("../models/User");
 const VideoSubmission = require("../models/VideoSubmission");
 
 // Get profile
 router.get("/profile", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("name isProfileComplete");
+    const user = await User.findById(req.user.id).select(
+      "name isProfileComplete"
+    );
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
     }
@@ -20,7 +27,8 @@ router.get("/profile", protect, async (req, res) => {
 
 // Profile setup
 router.post("/profile-setup", protect, async (req, res) => {
-  const { name, dateOfBirth, gender, cityState, motherTongue, qualification } = req.body;
+  const { name, dateOfBirth, gender, cityState, motherTongue, qualification } =
+    req.body;
 
   try {
     const user = await User.findById(req.user.id);
@@ -50,6 +58,7 @@ router.get("/submissions", protect, async (req, res) => {
   try {
     const submissions = await VideoSubmission.find({ userId: req.user.id })
       .populate("campaignId", "title imageUrl")
+      .populate("campaignId", "title imageUrl")
       .sort({ createdAt: -1 });
 
     const formattedSubmissions = submissions.map((sub) => ({
@@ -59,6 +68,7 @@ router.get("/submissions", protect, async (req, res) => {
       imageUrl: sub.campaignId.imageUrl,
     }));
 
+
     res.json(formattedSubmissions);
   } catch (err) {
     console.error(err.message);
@@ -66,6 +76,19 @@ router.get("/submissions", protect, async (req, res) => {
   }
 });
 
+// Get UPI
+router.get("/upi-id", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("upiId");
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    res.json({ upiId: user.upiId });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+})
 // Get UPI
 router.get("/upi-id", protect, async (req, res) => {
   try {
@@ -95,8 +118,37 @@ router.post("/save-upi", protect, async (req, res) => {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
+})
+// Save UPI
+router.post("/save-upi", protect, async (req, res) => {
+  const { upiId } = req.body;
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    user.upiId = upiId;
+    await user.save();
+    res.json({ msg: "UPI ID saved successfully!" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 });
 
+// Get account details
+router.get("/account-details", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("accountDetails");
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    res.json({ accountDetails: user.accountDetails });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
 // Get account details
 router.get("/account-details", protect, async (req, res) => {
   try {
@@ -128,4 +180,34 @@ router.post("/save-account", protect, async (req, res) => {
   }
 });
 
+// Profile image upload
+router.post(
+  "/profile-image",
+  protect,
+  userUpload,
+  gcsUpload,
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ msg: "User not found" });
+      }
+
+      if (req.files.profileImage) {
+        user.profileImage = req.files.profileImage[0].gcsUrl;
+      }
+
+      await user.save();
+      res.json({
+        msg: "Profile image uploaded successfully!",
+        profileImage: user.profileImage,
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server Error");
+    }
+  }
+);
+
 module.exports = router;
+
