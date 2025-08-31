@@ -6,6 +6,8 @@ const videoSubmissionSchema = new mongoose.Schema({
   videoUrl: { type: String, required: true },
   answers: { type: Object, required: true },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  viewed: { type: Boolean, default: false },
+  paidOut: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 

@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
+const { userUpload } = require('../middleware/uploadMiddleware');
 const Campaign = require('../models/Campaign');
+const { submitCampaign } = require('../controllers/userCampaignController');
 
-router.get('/', auth, async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
     const now = new Date();
     const campaigns = await Campaign.find({
@@ -18,7 +20,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', protect, async (req, res) => {
   const { id } = req.params;
   try {
     const campaign = await Campaign.findById(id);
@@ -36,5 +38,7 @@ router.get('/:id', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+router.post('/:id/submit', protect, userUpload, submitCampaign);
 
 module.exports = router;
