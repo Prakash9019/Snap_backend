@@ -7,51 +7,56 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
 });
-
-// Middleware to upload files to GCS
 const gcsUpload = (req, res, next) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return next();
+  let files = [];
+
+  // Support for fields()
+  if (req.files && !Array.isArray(req.files)) {
+    Object.keys(req.files).forEach(key => {
+      files = files.concat(req.files[key]);
+    });
   }
 
-  const uploadPromises = [];
+  // Support for single()/array()
+  if (req.file) {
+    files.push(req.file);
+  }
+  if (Array.isArray(req.files)) {
+    files = files.concat(req.files);
+  }
 
-  for (const key in req.files) {
-    if (req.files.hasOwnProperty(key)) {
-      const files = req.files[key];
-      files.forEach(file => {
-        const newFilename = `${Date.now()}-${file.originalname}`;
-        const blob = bucket.file(newFilename);
-        const blobStream = blob.createWriteStream({
-          resumable: false,
-          metadata: {
-            contentType: file.mimetype,
-          },
-        });
+  if (!files.length) return next();
 
-        const promise = new Promise((resolve, reject) => {
-          blobStream.on('error', err => { reject(err); });
-          blobStream.on('finish', async () => {
-            try {
-              await blob.makePublic();
-              file.gcsUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-              resolve();
-            } catch (err) {
-              reject(err);
-            }
-          });
-          blobStream.end(file.buffer);
-        });
-        uploadPromises.push(promise);
+  const uploadPromises = files.map(file => {
+    const newFilename = `${Date.now()}-${file.originalname}`;
+    const blob = bucket.file(newFilename);
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+      metadata: {
+        contentType: file.mimetype,
+      },
+    });
+
+    return new Promise((resolve, reject) => {
+      blobStream.on("error", reject);
+      blobStream.on("finish", async () => {
+        try {
+          await blob.makePublic();
+          file.gcsUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
       });
-    }
-  }
+      blobStream.end(file.buffer);
+    });
+  });
 
   Promise.all(uploadPromises)
     .then(() => next())
     .catch(err => {
-      console.error('GCS Upload Error:', err);
-      res.status(500).json({ message: 'File upload failed', error: err.message });
+      console.error("GCS Upload Error:", err);
+      res.status(500).json({ message: "File upload failed", error: err.message });
     });
 };
 

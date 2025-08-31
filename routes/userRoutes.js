@@ -186,35 +186,34 @@ router.post("/save-account", protect, async (req, res) => {
   }
 });
 
-// Profile image upload
 router.post(
   "/profile-image",
   protect,
-  userUpload,
-  gcsUpload,
+  userUpload,   // multer.fields()
+  gcsUpload,    // uploads to GCS
   async (req, res) => {
-    try {
-      console.log("Files received:", req.files);
-console.log("Body:", req.body);
+    console.log("Files received:", req.files);
+    console.log("Single file:", req.file);
 
-      const user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(404).json({ msg: "User not found" });
-      }
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
 
-      if (req.files.profileImage) {
-        user.profileImage = req.files.profileImage[0].gcsUrl;
-      }
+    // Pick from either req.file or req.files
+    const uploadedFile =
+      req.file ||
+      (req.files?.profileImage && req.files.profileImage[0]);
 
-      await user.save();
-      res.json({
-        msg: "Profile image uploaded successfully!",
-        profileImage: user.profileImage,
-      });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send("Server Error");
+    if (!uploadedFile?.gcsUrl) {
+      return res.status(400).json({ msg: "Upload failed: no file received" });
     }
+
+    user.profileImage = uploadedFile.gcsUrl;
+    await user.save();
+
+    res.json({
+      msg: "Profile image uploaded successfully!",
+      profileImage: user.profileImage,
+    });
   }
 );
 
