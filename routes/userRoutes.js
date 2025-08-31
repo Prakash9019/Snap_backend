@@ -7,7 +7,14 @@ const {
 } = require("../middleware/uploadMiddleware");
 const User = require("../models/User");
 const VideoSubmission = require("../models/VideoSubmission");
+const multer = require("multer");
 
+const upload = multer({ storage: multer.memoryStorage() });
+
+router.post("/profile-image1", upload.single("profileImage"), (req, res) => {
+  console.log("Files received:", req.file);
+  res.json({ profileImage: "uploaded_url_here" });
+});
 // Get profile
 router.get("/profile", protect, async (req, res) => {
   try {
