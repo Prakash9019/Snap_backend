@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
-const { userUpload } = require('../middleware/uploadMiddleware');
+const { userUpload, gcsUpload } = require('../middleware/uploadMiddleware');
 const Campaign = require('../models/Campaign');
 const { submitCampaign } = require('../controllers/userCampaignController');
 
@@ -39,6 +39,29 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
-router.post('/:id/submit', protect, userUpload, submitCampaign);
+// Upload stage6 media (video and stage image)
+router.post('/upload-stage6-media', protect, userUpload, gcsUpload, async (req, res) => {
+  try {
+    const uploadedFiles = {};
+    
+    if (req.files.video) {
+      uploadedFiles.videoUrl = req.files.video[0].gcsUrl;
+    }
+    
+    if (req.files.stage6Image) {
+      uploadedFiles.stageImageUrl = req.files.stage6Image[0].gcsUrl;
+    }
+    
+    res.json({ 
+      msg: 'Media uploaded successfully', 
+      ...uploadedFiles 
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Failed to upload media', error: err.message });
+  }
+});
+
+router.post('/:id/submit', protect, userUpload, gcsUpload, submitCampaign);
 
 module.exports = router;

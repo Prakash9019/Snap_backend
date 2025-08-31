@@ -1,4 +1,5 @@
 const express = require("express");
+const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 const {
@@ -10,16 +11,20 @@ const VideoSubmission = require("../models/VideoSubmission");
 
 // Get profile
 router.get("/profile", protect, async (req, res) => {
+// Get profile
+router.get("/profile", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
       "name isProfileComplete"
     );
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
+      return res.status(404).json({ msg: "User not found" });
     }
     res.json({ name: user.name, isProfileComplete: user.isProfileComplete });
   } catch (err) {
     console.error(err.message);
+    res.status(500).send("Server Error");
     res.status(500).send("Server Error");
   }
 });
@@ -54,25 +59,44 @@ router.post("/profile-setup", protect, async (req, res) => {
 
 // Video submissions
 router.get("/submissions", protect, async (req, res) => {
+// Video submissions
+router.get("/submissions", protect, async (req, res) => {
   try {
     const submissions = await VideoSubmission.find({ userId: req.user.id })
+      .populate("campaignId", "title imageUrl")
       .populate("campaignId", "title imageUrl")
       .sort({ createdAt: -1 });
 
     const formattedSubmissions = submissions.map((sub) => ({
+    const formattedSubmissions = submissions.map((sub) => ({
       id: sub.id,
       campaignTitle: sub.campaignId.title,
       status: sub.status === "pending" ? "In Progress" : "Completed",
+      status: sub.status === "pending" ? "In Progress" : "Completed",
       imageUrl: sub.campaignId.imageUrl,
     }));
+
 
     res.json(formattedSubmissions);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
+    res.status(500).send("Server Error");
   }
 });
 
+// Get UPI
+router.get("/upi-id", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("upiId");
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    res.json({ upiId: user.upiId });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 // Get UPI
 router.get("/upi-id", protect, async (req, res) => {
   try {
@@ -102,8 +126,35 @@ router.post("/save-upi", protect, async (req, res) => {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
+// Save UPI
+router.post("/save-upi", protect, async (req, res) => {
+  const { upiId } = req.body;
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    user.upiId = upiId;
+    await user.save();
+    res.json({ msg: "UPI ID saved successfully!" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 });
 
+// Get account details
+router.get("/account-details", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("accountDetails");
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    res.json({ accountDetails: user.accountDetails });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 // Get account details
 router.get("/account-details", protect, async (req, res) => {
   try {
@@ -165,3 +216,4 @@ router.post(
 );
 
 module.exports = router;
+
