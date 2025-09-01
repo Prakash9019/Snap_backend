@@ -128,6 +128,71 @@ exports.verifyOtp = async (req, res) => {
   }
 };
 
+// const MSG91_AUTH_KEY = '466916AdcTXSE2q68b424c6P1'; // put in .env
+// const MSG91_TEMPLATE_ID = '68b426bb188628395f33d434'; // template approved by DLT
+// const MSG91_OTP_EXPIRY = 5; // minutes
+
+// // ✅ Send OTP
+// exports.sendOtp = async (req, res) => {
+//   const { mobileNumber } = req.body;
+//   if (!mobileNumber) {
+//     return res.status(400).json({ msg: "Mobile number is required" });
+//   }
+
+//   try {
+//     const response = await axios.post(
+//       "https://control.msg91.com/api/v5/otp",
+//       {
+//         template_id: MSG91_TEMPLATE_ID,
+//         mobile: `91${mobileNumber}`,
+//         authkey: MSG91_AUTH_KEY,
+//         expiry: MSG91_OTP_EXPIRY,
+//       }
+//     );
+
+//     res.json({ msg: "OTP sent successfully.", data: response.data });
+//   } catch (error) {
+//     console.error(error.response?.data || error.message);
+//     res.status(500).json({ msg: "Failed to send OTP." });
+//   }
+// };
+
+// // ✅ Verify OTP
+// exports.verifyOtp = async (req, res) => {
+//   const { mobileNumber, code } = req.body;
+//   if (!mobileNumber || !code) {
+//     return res
+//       .status(400)
+//       .json({ msg: "Mobile number and OTP are required" });
+//   }
+
+//   try {
+//     const response = await axios.post(
+//       "https://control.msg91.com/api/v5/otp/verify",
+//       {
+//         authkey: MSG91_AUTH_KEY,
+//         mobile: `91${mobileNumber}`,
+//         otp: code,
+//       }
+//     );
+
+//     if (response.data.type === "success") {
+//       let user = await User.findOne({ mobileNumber });
+//       if (!user) {
+//         user = new User({ mobileNumber });
+//         await user.save();
+//       }
+//       const token = generateToken(user._id);
+//       res.json({ msg: "OTP verified successfully.", token });
+//     } else {
+//       res.status(400).json({ msg: "Invalid OTP" });
+//     }
+//   } catch (error) {
+//     console.error(error.response?.data || error.message);
+//     res.status(500).json({ msg: "Failed to verify OTP." });
+//   }
+// };
+
 
 exports.registerEmail = async (req, res) => {
   const { name, email, password } = req.body;

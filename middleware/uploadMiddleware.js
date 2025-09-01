@@ -41,7 +41,7 @@ const gcsUpload = (req, res, next) => {
       blobStream.on("error", reject);
       blobStream.on("finish", async () => {
         try {
-          await blob.makePublic();
+          // await blob.makePublic();
           file.gcsUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
           resolve();
         } catch (err) {
