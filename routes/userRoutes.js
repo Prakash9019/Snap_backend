@@ -208,6 +208,7 @@ router.post(
     }
 
     user.profileImage = uploadedFile.gcsUrl;
+    console.log("New profile image URL:", user.profileImage);
     await user.save();
 
     res.json({

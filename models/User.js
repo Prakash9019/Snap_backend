@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String, unique: true, sparse: true },
   name: { type: String },
   dob: { type: Date },
+  profileImage:{ type: String },
   gender: { type: String },
   cityState: { type: String },
   motherTongue: { type: String },
