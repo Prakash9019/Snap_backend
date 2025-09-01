@@ -18,13 +18,11 @@ router.post("/profile-image1", upload.single("profileImage"), (req, res) => {
 // Get profile
 router.get("/profile", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select(
-      "name isProfileComplete"
-    );
+    const user = await User.findById(req.user.id)
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
     }
-    res.json({ name: user.name, isProfileComplete: user.isProfileComplete });
+    res.json({ name: user.name, isProfileComplete: user.isProfileComplete, profileImage: user.profileImage });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
