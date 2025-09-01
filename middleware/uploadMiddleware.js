@@ -5,7 +5,7 @@ const path = require('path');
 // Multer configuration for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
+  limits: { fileSize: 20 * 1024 * 1024 }, // 5MB file size limit
 });
 const gcsUpload = (req, res, next) => {
   let files = [];
