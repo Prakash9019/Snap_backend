@@ -43,13 +43,13 @@ router.get('/:id', protect, async (req, res) => {
 router.post('/upload-stage6-media', protect, userUpload, gcsUpload, async (req, res) => {
   try {
     const uploadedFiles = {};
-    
+    console.log("Files after GCS upload:", req.files);
     if (req.files.video) {
-      uploadedFiles.videoUrl = req.files.video[0].gcsUrl;
+      uploadedFiles.videoUri = req.files.video[0].gcsUrl;
     }
     
     if (req.files.stage6Image) {
-      uploadedFiles.stageImageUrl = req.files.stage6Image[0].gcsUrl;
+      uploadedFiles.stageImageUri = req.files.stage6Image[0].gcsUrl;
     }
     
     res.json({ 

@@ -68,9 +68,9 @@ const adminUpload = upload.fields([
 
 // User upload fields
 const userUpload = upload.fields([
-  { name: 'video', maxCount: 1 },
+  { name: 'videoUri', maxCount: 1 },
   { name: 'image', maxCount: 1 },
-  { name: 'stage6Image', maxCount: 1 }, // Added for stage6 image
+  { name: 'stageImageUri', maxCount: 1 }, // Added for stage6 image
   { name: 'profileImage', maxCount: 1 }
 ]);
 
