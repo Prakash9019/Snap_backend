@@ -41,6 +41,8 @@ const transporter = nodemailer.createTransport({
 exports.loginPhoneFirebase = async (req, res) => {
   try {
     const { token } = req.body;
+    console.log(token);
+     console.log("In loginPhoneFirebase");
     if (!token) return res.status(400).json({ msg: "Firebase token required" });
 
     const decoded = await verifyFirebaseToken(token);
