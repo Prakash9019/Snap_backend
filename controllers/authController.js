@@ -18,13 +18,16 @@ const EMAIL_PASS = process.env.EMAIL_PASS;
 const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const client2 = new OAuth2Client();
+
+
 async function verifyFirebaseToken(idToken) {
   const ticket = await client2.verifyIdToken({
     idToken,
-    audience: "snap-f86b4", // or Firebase app client ID
+    audience: "43834655102-imbc0de7q0ldcv6fvcooutl3jf8999j1.apps.googleusercontent.com",
   });
   return ticket.getPayload();
 }
+
 
 const generateToken = (id) => {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: '7d' });
