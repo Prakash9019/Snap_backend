@@ -8,6 +8,7 @@ const {
     registerEmail,
     loginEmail,
     loginGoogle,
+    loginPhoneFirebase,
     adminSignup,
     adminLogin,
     adminForgotPassword,
@@ -18,6 +19,7 @@ const {
 router.post("/send-email-otp", sendEmailOtp);
 router.post("/verify-email-otp", verifyEmailOtp);
 router.post('/send-otp', sendOtp);
+router.post('/login-phone-firebase', loginPhoneFirebase);
 router.post('/verify-otp', verifyOtp);
 router.post('/register-email', registerEmail);
 router.post('/login-email', loginEmail);

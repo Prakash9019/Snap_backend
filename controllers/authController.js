@@ -17,9 +17,17 @@ const EMAIL_PASS = process.env.EMAIL_PASS;
 
 const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client2 = new OAuth2Client();
+async function verifyFirebaseToken(idToken) {
+  const ticket = await client2.verifyIdToken({
+    idToken,
+    audience: "snap-f86b4", // or Firebase app client ID
+  });
+  return ticket.getPayload();
+}
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '7d' });
 };
 
 const transporter = nodemailer.createTransport({
@@ -29,6 +37,31 @@ const transporter = nodemailer.createTransport({
     pass: EMAIL_PASS,
   },
 });
+
+exports.loginPhoneFirebase = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ msg: "Firebase token required" });
+
+    const decoded = await verifyFirebaseToken(token);
+    const phoneNumber = decoded.phone_number;
+
+    if (!phoneNumber) return res.status(400).json({ msg: "Phone number not found" });
+
+    let user = await User.findOne({ mobileNumber: phoneNumber });
+    if (!user) {
+      user = new User({ mobileNumber: phoneNumber });
+      await user.save();
+    }
+
+    const appToken = generateToken(user._id);
+    res.json({ msg: "Phone login successful", token: appToken, user });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ msg: "Invalid Firebase token" });
+  }
+};
+
 
 exports.sendEmailOtp = async (req, res) => {
   const { email } = req.body;
