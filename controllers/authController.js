@@ -19,14 +19,18 @@ const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const client2 = new OAuth2Client();
 
+const admin = require("firebase-admin");
+
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+});
 
 async function verifyFirebaseToken(idToken) {
-  const ticket = await client2.verifyIdToken({
-    idToken,
-    audience: "43834655102-imbc0de7q0ldcv6fvcooutl3jf8999j1.apps.googleusercontent.com",
-  });
-  return ticket.getPayload();
+  const decodedToken = await admin.auth().verifyIdToken(idToken);
+  console.log("Verified UID:", decodedToken.uid);
+  return decodedToken;
 }
+
 
 
 const generateToken = (id) => {
