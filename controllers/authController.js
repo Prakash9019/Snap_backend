@@ -47,19 +47,19 @@ const transporter = nodemailer.createTransport({
 
 exports.loginPhoneFirebase = async (req, res) => {
   try {
-    const { token } = req.body;
-    console.log(token);
-     console.log("In loginPhoneFirebase");
-    if (!token) return res.status(400).json({ msg: "Firebase token required" });
+    const { mobileNumber } = req.body;
+    // console.log(token);
+    //  console.log("In loginPhoneFirebase");
+    // if (!token) return res.status(400).json({ msg: "Firebase token required" });
 
-    const decoded = await verifyFirebaseToken(token);
-    const phoneNumber = decoded.phone_number;
+    // const decoded = await verifyFirebaseToken(token);
+    // const phoneNumber = decoded.phone_number;
 
-    if (!phoneNumber) return res.status(400).json({ msg: "Phone number not found" });
+    // if (!phoneNumber) return res.status(400).json({ msg: "Phone number not found" });
 
-    let user = await User.findOne({ mobileNumber: phoneNumber });
+    let user = await User.findOne({ mobileNumber: mobileNumber });
     if (!user) {
-      user = new User({ mobileNumber: phoneNumber });
+      user = new User({ mobileNumber: mobileNumber });
       await user.save();
     }
 
