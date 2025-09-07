@@ -39,30 +39,64 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
-// Upload stage6 media (video and stage image)
-router.post('/upload-stage6-media', protect, userUpload, gcsUpload, async (req, res) => {
-  try {
-    const uploadedFiles = {};
-    console.log("Files after GCS upload:", req.files);
-    console.log(req.files.videoUri[0].gcsUrl);
-    console.log(req.files.stageImageUri[0].gcsUrl);
-    if (req.files.videoUri) {
-      uploadedFiles.videoUri = req.files.videoUri[0].gcsUrl;
-    }
+// // Upload stage6 media (video and stage image)
+// router.post('/upload-stage6-media', protect, userUpload, gcsUpload, async (req, res) => {
+//   try {
+//     const uploadedFiles = {};
+//     if (req.files.videoUri) {
+//       uploadedFiles.videoUri = req.files.videoUri[0].gcsUrl;
+//     }
     
-    if (req.files.stageImageUri) {
-      uploadedFiles.stageImageUri = req.files.stageImageUri[0].gcsUrl;
+//     if (req.files.stageImageUri) {
+//       uploadedFiles.stageImageUri = req.files.stageImageUri[0].gcsUrl;
+//     }
+//         console.log("Files after GCS upload:", req.files);
+//     console.log(req.files.videoUri[0].gcsUrl);
+//     console.log(req.files.stageImageUri[0].gcsUrl);
+//     res.json({ 
+//       msg: 'Media uploaded successfully', 
+//       ...uploadedFiles 
+//     });
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ msg: 'Failed to upload media', error: err.message });
+//   }
+// });
+
+router.post(
+  "/upload-stage6-media",
+  protect,
+  userUpload,
+  gcsUpload,
+  async (req, res) => {
+    try {
+      const uploadedFiles = {};
+
+      // ✅ log after gcsUpload
+      console.log("Files after GCS upload:", req.files);
+
+      if (req.files.videoUri) {
+        uploadedFiles.videoUri = req.files.videoUri[0].gcsUrl;
+      }
+
+      if (req.files.stageImageUri) {
+        uploadedFiles.stageImageUri = req.files.stageImageUri[0].gcsUrl;
+      }
+      console.log("hiiiiiiiiiiii" + req.files.videoUri[0].gcsUrl);
+      res.json({
+        msg: "Media uploaded successfully",
+        ...uploadedFiles,
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({
+        msg: "Failed to upload media",
+        error: err.message,
+      });
     }
-    
-    res.json({ 
-      msg: 'Media uploaded successfully', 
-      ...uploadedFiles 
-    });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Failed to upload media', error: err.message });
   }
-});
+);
+
 
 router.post('/:id/submit', protect, userUpload, gcsUpload, submitCampaign);
 
