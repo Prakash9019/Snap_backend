@@ -3,7 +3,8 @@ const VideoSubmission = require('../models/VideoSubmission');
 exports.submitCampaign = async (req, res) => {
   const userId = req.user.id;
   const { campaignId, stageAnswers } = req.body;
-
+   console.log(req.files)
+   console.log(req.files.videoUri[0].gcsUrl)
   try {
     const submission = new VideoSubmission({
       userId,
