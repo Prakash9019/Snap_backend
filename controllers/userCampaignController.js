@@ -3,6 +3,7 @@ const VideoSubmission = require('../models/VideoSubmission');
 exports.submitCampaign = async (req, res) => {
   const userId = req.user.id;
   const { campaignId, stageAnswers } = req.body;
+  console.log("hellllo"+ stageAnswers);
   try {
     const submission = new VideoSubmission({
       userId,
