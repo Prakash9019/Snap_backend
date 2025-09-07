@@ -13,6 +13,9 @@ exports.submitCampaign = async (req, res) => {
     });
        console.log(req.files)
    console.log(req.files.videoUri[0].gcsUrl)
+   console.log(req.files.stageImageUri[0].gcsUrl);
+   console.log("hiiiiiiiiiiii" + req.files.videoUri[0].gcsUrl);
+   console.log(submission)
     await submission.save();
 
     res.status(201).json({ msg: 'Campaign submitted successfully!' });
