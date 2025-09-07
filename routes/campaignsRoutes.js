@@ -85,7 +85,8 @@ router.post(
       console.log("hiiiiiiiiiiii" + req.files.videoUri[0].gcsUrl);
       res.json({
         msg: "Media uploaded successfully",
-        ...uploadedFiles,
+          videoUrl: uploadedFiles.videoUri || null,
+          stageImage: uploadedFiles.stageImageUri || null
       });
     } catch (err) {
       console.error(err.message);
