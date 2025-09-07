@@ -4,6 +4,10 @@ exports.submitCampaign = async (req, res) => {
   const userId = req.user.id;
   const { campaignId, stageAnswers } = req.body;
   console.log("hellllo"+ stageAnswers);
+  console.log(stageAnswers);
+  console.log(typeof stageAnswers);
+  console.log(campaignId);
+  console.log(userId);
   try {
     const submission = new VideoSubmission({
       userId,
@@ -12,10 +16,10 @@ exports.submitCampaign = async (req, res) => {
       videoUrl: req.files?.videoUri ? req.files.videoUri[0].gcsUrl : null, // match "videoUri"
       stageImage: req.files?.stageImageUri ? req.files.stageImageUri[0].gcsUrl : null, // match "stageImageUri"
     });
-       console.log(req.files)
-   console.log(req.files.videoUri[0].gcsUrl)
-   console.log(req.files.stageImageUri[0].gcsUrl);
-   console.log("hiiiiiiiiiiii" + req.files.videoUri[0].gcsUrl);
+  //      console.log(req.files)
+  //  console.log(req.files.videoUri[0].gcsUrl)
+  //  console.log(req.files.stageImageUri[0].gcsUrl);
+  //  console.log("hiiiiiiiiiiii" + req.files.videoUri[0].gcsUrl);
    console.log(submission)
     await submission.save();
 
