@@ -5,7 +5,7 @@ const videoSubmissionSchema = new mongoose.Schema({
   campaignId: { type: mongoose.Schema.Types.ObjectId, ref: 'Campaign', required: true },
   videoUrl: { type: String, },
   stageImage: { type: String }, // Added for stage6 image
-  answers: { type: Object },
+  answers: [{ type: mongoose.Schema.Types.Mixed }], // 👈 Allow array of objects
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   viewed: { type: Boolean, default: false },
   paidOut: { type: Boolean, default: false },

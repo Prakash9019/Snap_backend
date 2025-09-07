@@ -3,29 +3,24 @@ const VideoSubmission = require('../models/VideoSubmission');
 exports.submitCampaign = async (req, res) => {
   const userId = req.user.id;
   const { campaignId, stageAnswers } = req.body;
-  console.log("hellllo"+ stageAnswers);
-  console.log(stageAnswers);
-  console.log(typeof stageAnswers);
-  console.log(campaignId);
-  console.log(userId);
+
   try {
     const submission = new VideoSubmission({
       userId,
       campaignId,
-      answers: stageAnswers ? JSON.parse(stageAnswers) : [], // frontend sends stageAnswers
-      videoUrl: req.files?.videoUri ? req.files.videoUri[0].gcsUrl : null, // match "videoUri"
-      stageImage: req.files?.stageImageUri ? req.files.stageImageUri[0].gcsUrl : null, // match "stageImageUri"
+      // ✅ if frontend is already sending JSON.stringify(stageAnswers)
+      answers: stageAnswers ? JSON.parse(stageAnswers) : [],
+
+      // ✅ safer way to access uploaded files
+      videoUrl: req.files?.videoUri?.[0]?.gcsUrl || null,
+      stageImage: req.files?.stageImageUri?.[0]?.gcsUrl || null,
     });
-  //      console.log(req.files)
-  //  console.log(req.files.videoUri[0].gcsUrl)
-  //  console.log(req.files.stageImageUri[0].gcsUrl);
-  //  console.log("hiiiiiiiiiiii" + req.files.videoUri[0].gcsUrl);
-   console.log(submission)
+
     await submission.save();
 
     res.status(201).json({ msg: 'Campaign submitted successfully!' });
   } catch (err) {
-    console.error(err.message);
+    console.error("Submit error:", err);
     res.status(500).json({ msg: 'Failed to submit campaign.', error: err.message });
   }
 };
