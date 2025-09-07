@@ -4,6 +4,7 @@ const connectDB = require('./config/db');
 const path = require('path');
 const { Storage } = require('@google-cloud/storage');
 // Load environment variables
+const cors = require('cors');
 dotenv.config();
 
 // Connect to MongoDB
@@ -14,6 +15,12 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+// ✅ Configure CORS
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://your-frontend-domain.com'],
+  credentials: true
+}));
+
 
 // Serve static files from the 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -46,5 +53,5 @@ app.get("/api/get-upload-url", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-const PORT =  8080;
+const PORT =  5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

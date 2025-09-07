@@ -78,8 +78,7 @@ router.post("/profile-setup", protect, async (req, res) => {
 router.get("/submissions", protect, async (req, res) => {
   try {
     const submissions = await VideoSubmission.find({ userId: req.user.id })
-      .populate("campaignId", "title imageUrl")
-      .populate("campaignId", "title imageUrl")
+      .populate("campaignId", "title status imageUrl")
       .sort({ createdAt: -1 });
 
     const formattedSubmissions = submissions.map((sub) => ({
